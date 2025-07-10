@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "server_demo": {
+      "type": "sse",
+      "url": "http://localhost:8080/sse",
+      "disabled": true
+    },
+    "chrome-mcp-server": {
+      "type": "streamableHttp",
+      "url": "http://127.0.0.1:12306/mcp",
+      "disabled": true
+    }
+  }
+}

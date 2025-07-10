@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crow智能语音助手</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Crow智能语音助手</h1>
+        </header>
+        
+        <main>
+            <div class="status-container">
+                <div class="status-item">
+                    <span>连接状态:</span>
+                    <span id="connection-status" class="status-disconnected">未连接</span>
+                </div>
+                <div class="status-item">
+                    <span>录音状态:</span>
+                    <span id="recording-status" class="status-stopped">未开始</span>
+                </div>
+            </div>
+
+            <div class="display-container">
+                <div class="asr-container">
+                    <h2>语音识别结果</h2>
+                    <div id="asr-result" class="result-box"></div>
+                </div>
+                
+                <div class="chat-container">
+                    <h2>对话响应</h2>
+                    <div id="chat-result" class="result-box"></div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="start-btn" class="control-btn primary-btn">开始说话</button>
+                <button id="abort-btn" class="control-btn secondary-btn" disabled>中断</button>
+                <button id="disconnect-btn" class="control-btn tertiary-btn">断开连接</button>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

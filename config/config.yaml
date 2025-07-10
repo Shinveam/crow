@@ -1,0 +1,29 @@
+server:
+  mode: debug # debug/test/release
+  ip: 0.0.0.0
+  port: 28080
+
+selected_module:
+  asr: paraformer
+  llm: qwen
+  tts: cosy_voice
+
+asr:
+  paraformer:
+    api_key: <your api_key>
+
+llm:
+  qwen:
+    model: qwen2.5-72b-instruct
+    base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+    api_key: <your api_key>
+
+tts:
+  cosy_voice:
+    api_key: <your api_key>
+
+cmd_exit:
+  - "退出"
+  - "关闭"
+  - "exit"
+  - "close"
