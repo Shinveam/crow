@@ -58,7 +58,7 @@ func NewHandler(cfg *config.Config, log *log.Logger, conn Connection) *Handler {
 	return handler
 }
 
-func (h *Handler) initAgent() error {
+func (h *Handler) initAgent(ctx context.Context) error {
 	var llmCfg config.LLMConfig
 	if v, ok := h.cfg.SelectedModule["llm"]; ok {
 		if _, ok = h.cfg.LLM[v]; ok {
@@ -66,7 +66,7 @@ func (h *Handler) initAgent() error {
 		}
 	}
 	llm := openai.NewLLM(llmCfg.Model, llmCfg.APIKey, llmCfg.BaseURL, true)
-	mcpReAct, err := agent.NewMCPAgent(context.Background())
+	mcpReAct, err := agent.NewMCPAgent(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to create mcp agent: %v", err)
 	}

@@ -41,14 +41,11 @@ func (c *CurrentTime) GetTool() schema.Tool {
 
 func (c *CurrentTime) Execute(ctx context.Context, arguments map[string]any) (string, error) {
 	local := time.Local // 默认使用本地时区
-	if arguments != nil {
-		timezone, ok := arguments["timezone"].(string)
-		if ok && timezone != "" {
-			if loc, err := time.LoadLocation(timezone); err == nil {
-				local = loc
-			}
+	timezone, ok := arguments["timezone"].(string)
+	if ok && timezone != "" {
+		if loc, err := time.LoadLocation(timezone); err == nil {
+			local = loc
 		}
 	}
-
 	return time.Now().In(local).Format("2006-01-02 15:04:05"), nil
 }

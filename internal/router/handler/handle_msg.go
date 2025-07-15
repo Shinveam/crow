@@ -151,7 +151,7 @@ func (h *Handler) handleChatMessage(ctx context.Context, text string) error {
 	h.log.Infof("start new chat round: %d", h.chatRound)
 
 	if h.agent == nil {
-		if err := h.initAgent(); err != nil {
+		if err := h.initAgent(ctx); err != nil {
 			return fmt.Errorf("failed to init agent: %v", err)
 		}
 		go func() {
