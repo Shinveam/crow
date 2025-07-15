@@ -30,18 +30,14 @@ func (m *MCPClientTool) GetTool() schema.Tool {
 	return m.tool
 }
 
-func (m *MCPClientTool) Execute(ctx context.Context, arguments string) (string, error) {
+func (m *MCPClientTool) Execute(ctx context.Context, arguments map[string]any) (string, error) {
 	toolRequest := mcp.CallToolRequest{
 		Request: mcp.Request{
 			Method: "tools/call",
 		},
 	}
-	var args map[string]any
-	if err := json.Unmarshal([]byte(arguments), &args); err != nil {
-		return "", fmt.Errorf("json unmarshal arguments failed: %v", err)
-	}
 	toolRequest.Params.Name = m.tool.Function.Name
-	toolRequest.Params.Arguments = args
+	toolRequest.Params.Arguments = arguments
 	result, err := m.client.CallTool(ctx, toolRequest)
 	if err != nil {
 		return "", fmt.Errorf("call tool failed: %v", err)

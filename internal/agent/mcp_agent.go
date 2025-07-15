@@ -2,6 +2,7 @@ package agent
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	mcpconfig "crow/internal/config"
@@ -109,7 +110,14 @@ func (m *MCPAgent) ExecuteTool(ctx context.Context, toolCall schema.ToolCall) (s
 	if !ok {
 		return schema.AgentStateERROR, fmt.Sprintf("Error: Unknown tool %s", toolCall.Function.Name)
 	}
-	result, err := theTool.Execute(ctx, toolCall.Function.Arguments)
+
+	var arguments map[string]any
+	if toolCall.Function.Arguments != "" {
+		if err := json.Unmarshal([]byte(toolCall.Function.Arguments), &arguments); err != nil {
+			return schema.AgentStateERROR, fmt.Sprintf("failed to parse arguments: %v", err)
+		}
+	}
+	result, err := theTool.Execute(ctx, arguments)
 	if err != nil {
 		return schema.AgentStateERROR, fmt.Sprintf("Error: %s", err.Error())
 	}

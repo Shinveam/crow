@@ -2,7 +2,6 @@ package tool
 
 import (
 	"context"
-	"encoding/json"
 	"time"
 
 	"crow/internal/schema"
@@ -40,16 +39,13 @@ func (c *CurrentTime) GetTool() schema.Tool {
 	}
 }
 
-func (c *CurrentTime) Execute(ctx context.Context, arguments string) (string, error) {
+func (c *CurrentTime) Execute(ctx context.Context, arguments map[string]any) (string, error) {
 	local := time.Local // 默认使用本地时区
-	if arguments != "" {
-		var args map[string]any
-		if err := json.Unmarshal([]byte(arguments), &args); err == nil {
-			timezone, ok := args["timezone"].(string)
-			if ok && timezone != "" {
-				if loc, err := time.LoadLocation(timezone); err == nil {
-					local = loc
-				}
+	if arguments != nil {
+		timezone, ok := arguments["timezone"].(string)
+		if ok && timezone != "" {
+			if loc, err := time.LoadLocation(timezone); err == nil {
+				local = loc
 			}
 		}
 	}

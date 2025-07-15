@@ -2,7 +2,6 @@ package tool
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"crow/internal/schema"
@@ -41,15 +40,12 @@ func (t *Terminate) GetTool() schema.Tool {
 	}
 }
 
-func (t *Terminate) Execute(ctx context.Context, arguments string) (string, error) {
-	if arguments == "" {
+func (t *Terminate) Execute(ctx context.Context, arguments map[string]any) (string, error) {
+	if arguments == nil {
 		return "", fmt.Errorf("missing arguments for tool call: %s", t.name)
 	}
-	var args map[string]any
-	if err := json.Unmarshal([]byte(arguments), &args); err != nil {
-		return "", fmt.Errorf("invalid arguments for tool call: %s", t.name)
-	}
-	status, ok := args["status"].(string)
+
+	status, ok := arguments["status"].(string)
 	if !ok || (status != "success" && status != "failure") {
 		return "", fmt.Errorf("invalid status value: %s", status)
 	}

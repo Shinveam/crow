@@ -108,7 +108,7 @@ go run cmd/agent-cli/main.go
 |       enable_tts       |  bool  |                  Enable TTS?                   |    No    |  false   |
 |       asr_params       | object | ASR settings (takes effect if enable_asr=true) |    No    |    -     |
 |   asr_params.format    | string |        Format of the audio to recognize        |    No    |   pcm    |
-| asr_params.sample_rate |  int   |            Audio sample rate (kHz)             |    No    |  16000   |
+| asr_params.sample_rate |  int   |             Audio sample rate (Hz)             |    No    |  16000   |
 |  asr_params.channels   |  int   | Number of audio channels (1: mono, 2: stereo)  |    No    |    1     |
 |   asr_params.vad_eos   |  int   |           VAD endpoint timeout (ms)            |    No    |   800    |
 | asr_params.enable_punc |  bool  |              Enable punctuation?               |    No    |  false   |
@@ -120,7 +120,7 @@ go run cmd/agent-cli/main.go
 |    tts_params.speed    | float  |                Speed: [0.5-2.0]                |    No    |   1.0    |
 |   tts_params.volume    |  int   |                Volume: [0-100]                 |    No    |    50    |
 |    tts_params.pitch    | float  |                Pitch: [0.5-2.0]                |    No    |   1.0    |
-| tts_params.sample_rate |  int   |            Audio sample rate (kHz)             |    No    |  16000   |
+| tts_params.sample_rate |  int   |             Audio sample rate (Hz)             |    No    |  16000   |
 |  tts_params.language   | string |             Language, e.g., zh, en             |    No    |    zh    |
 
 </details>
@@ -136,7 +136,7 @@ go run cmd/agent-cli/main.go
 |          type          | string |                  Fixed: hello                  |   Yes   |
 |       asr_params       | object | ASR settings (takes effect if enable_asr=true) |   No    |
 |   asr_params.format    | string |        Format of the audio to recognize        |   No    |
-| asr_params.sample_rate |  int   |            Audio sample rate (kHz)             |   No    |
+| asr_params.sample_rate |  int   |             Audio sample rate (Hz)             |   No    |
 |  asr_params.channels   |  int   | Number of audio channels (1: mono, 2: stereo)  |   No    |
 |   asr_params.vad_eos   |  int   |           VAD endpoint timeout (ms)            |   No    |
 | asr_params.enable_punc |  bool  |              Enable punctuation?               |   No    |
@@ -148,7 +148,7 @@ go run cmd/agent-cli/main.go
 |    tts_params.speed    | float  |                Speed: [0.5-2.0]                |   No    |
 |   tts_params.volume    |  int   |                Volume: [0-100]                 |   No    |
 |    tts_params.pitch    | float  |                Pitch: [0.5-2.0]                |   No    |
-| tts_params.sample_rate |  int   |            Audio sample rate (kHz)             |   No    |
+| tts_params.sample_rate |  int   |             Audio sample rate (Hz)             |   No    |
 |  tts_params.language   | string |             Language, e.g., zh, en             |   No    |
 
 </details>

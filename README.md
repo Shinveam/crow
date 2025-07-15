@@ -108,7 +108,7 @@ go run cmd/agent-cli/main.go
 |       enable_tts       |  bool  |           是否启用TTS            |  否   |  false   |
 |       asr_params       | object | ASR设置参数（enable_asr为true时生效）  |  否   |    无     |
 |   asr_params.format    | string |           待识别音频格式            |  否   |   pcm    |
-| asr_params.sample_rate |  int   |       待识别音频采样率，单位：kHz        |  否   |  16000   |
+| asr_params.sample_rate |  int   |        待识别音频采样率，单位：Hz        |  否   |  16000   |
 |  asr_params.channels   |  int   |     待识别音频声道数，1：单声道，2：双声道     |  否   |    1     |
 |   asr_params.vad_eos   |  int   |    语音活动检测（VAD）后端点时间，单位：毫秒    |  否   |   800    |
 | asr_params.enable_punc |  bool  |           是否启用标点符号           |  否   |  false   |
@@ -120,7 +120,7 @@ go run cmd/agent-cli/main.go
 |    tts_params.speed    | float  |         语速：[0.5-2.0]         |  否   |   1.0    |
 |   tts_params.volume    |  int   |          音量：[0-100]          |  否   |    50    |
 |    tts_params.pitch    | float  |         语调：[0.5-2.0]         |  否   |   1.0    |
-| tts_params.sample_rate |  int   |         音频采样率，单位：kHz         |  否   |  16000   |
+| tts_params.sample_rate |  int   |         音频采样率，单位：Hz          |  否   |  16000   |
 |  tts_params.language   | string |      语种，如：zh（中文），en（英文）      |  否   |    zh    |
 
 </details>
@@ -136,7 +136,7 @@ go run cmd/agent-cli/main.go
 |          type          | string |          固定为 hello           |  是   |
 |       asr_params       | object | ASR设置参数（enable_asr为true时生效）  |  否   |
 |   asr_params.format    | string |           待识别音频格式            |  否   |
-| asr_params.sample_rate |  int   |       待识别音频采样率，单位：kHz        |  否   |
+| asr_params.sample_rate |  int   |        待识别音频采样率，单位：Hz        |  否   |
 |  asr_params.channels   |  int   |     待识别音频声道数，1：单声道，2：双声道     |  否   |
 |   asr_params.vad_eos   |  int   |    语音活动检测（VAD）后端点时间，单位：毫秒    |  否   |
 | asr_params.enable_punc |  bool  |           是否启用标点符号           |  否   |
@@ -148,7 +148,7 @@ go run cmd/agent-cli/main.go
 |    tts_params.speed    | float  |         语速：[0.5-2.0]         |  否   |
 |   tts_params.volume    |  int   |          音量：[0-100]          |  否   |
 |    tts_params.pitch    | float  |         语调：[0.5-2.0]         |  否   |
-| tts_params.sample_rate |  int   |         音频采样率，单位：kHz         |  否   |
+| tts_params.sample_rate |  int   |         音频采样率，单位：Hz          |  否   |
 |  tts_params.language   | string |      语种，如：zh（中文），en（英文）      |  否   |
 
 </details>
