@@ -15,7 +15,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	"crow/internal/tts"
-	log2 "crow/pkg/log"
+	"crow/pkg/log"
 )
 
 // 阿里语音合成 CosyVoice WebSocket API 文档
@@ -27,7 +27,7 @@ const (
 
 type CosyVoice struct {
 	cfg *tts.Config
-	log *log2.Logger
+	log *log.Logger
 
 	conn     *websocket.Conn
 	listener tts.Listener
@@ -41,7 +41,7 @@ type CosyVoice struct {
 	taskID      string
 }
 
-func NewCosyVoice(listener tts.Listener, log *log2.Logger) *CosyVoice {
+func NewCosyVoice(listener tts.Listener, log *log.Logger) *CosyVoice {
 	return &CosyVoice{
 		log:       log,
 		listener:  listener,

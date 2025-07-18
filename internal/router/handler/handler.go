@@ -169,7 +169,7 @@ func (h *Handler) listenClientTextMessages(ctx context.Context) {
 	}
 }
 
-func (h *Handler) OnAsrResult(result string, state asr.State) bool {
+func (h *Handler) OnAsrResult(ctx context.Context, result string, state asr.State) bool {
 	if h.asrProvider.GetSilenceCount() >= 2 {
 		h.log.Infof("连续检测到两次静音，结束对话")
 		h.closeAfterChat = true
@@ -187,12 +187,12 @@ func (h *Handler) OnAsrResult(result string, state asr.State) bool {
 	switch state {
 	case asr.StateSentenceEnd:
 		atomic.StoreInt32(&h.serverStopRecv, 1)
-		_ = h.handleChatMessage(context.Background(), result)
+		_ = h.handleChatMessage(ctx, result)
 		return false
 	case asr.StateCompleted:
 		atomic.StoreInt32(&h.serverStopRecv, 1)
 		_ = h.asrProvider.Reset() // 重置ASR，准备下一次识别
-		_ = h.handleChatMessage(context.Background(), result)
+		_ = h.handleChatMessage(ctx, result)
 		return true
 	}
 	return false

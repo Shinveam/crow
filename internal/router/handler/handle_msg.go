@@ -164,7 +164,7 @@ func (h *Handler) handleChatMessage(ctx context.Context, text string) error {
 		h.log.Errorf("agent run error: %v", err)
 	}
 
-	//agent运行完成后，需要开启服务端接收数据以便后续继续请求
+	// agent运行完成后，需要开启服务端接收数据以便后续继续请求
 	atomic.StoreInt32(&h.serverStopRecv, 0)
 	return nil
 }

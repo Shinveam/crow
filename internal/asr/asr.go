@@ -15,7 +15,7 @@ const (
 )
 
 type Listener interface {
-	OnAsrResult(result string, state State) bool
+	OnAsrResult(ctx context.Context, result string, state State) bool
 }
 
 type Config struct {

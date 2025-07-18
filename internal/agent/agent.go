@@ -10,7 +10,7 @@ import (
 
 	"crow/internal/llm"
 	"crow/internal/schema"
-	log2 "crow/pkg/log"
+	"crow/pkg/log"
 )
 
 type ReAct interface {
@@ -26,7 +26,7 @@ type ReAct interface {
 }
 
 type Agent struct {
-	log         *log2.Logger
+	log         *log.Logger
 	name        string            // Agent的名称
 	description string            // Agent的描述
 	state       schema.AgentState // Agent的状态
@@ -50,7 +50,7 @@ type Agent struct {
 	toolCalls []schema.ToolCall // 需要被调用的工具
 }
 
-func NewAgent(agentName string, log *log2.Logger, llm llm.LLM, reAct ReAct, opts ...Option) *Agent {
+func NewAgent(agentName string, log *log.Logger, llm llm.LLM, reAct ReAct, opts ...Option) *Agent {
 	agent := &Agent{
 		name:  agentName,
 		state: schema.AgentStateIDLE,
@@ -76,7 +76,7 @@ func NewAgent(agentName string, log *log2.Logger, llm llm.LLM, reAct ReAct, opts
 func (a *Agent) Run(ctx context.Context, prompt string) error {
 	if a.state != schema.AgentStateIDLE {
 		a.log.Infof("Agent %s is not in IDLE state, current state: %s", a.name, a.state)
-		return fmt.Errorf("Agent %s is not in IDLE state, current state: %s", a.name, a.state)
+		return fmt.Errorf("agent %s is not in IDLE state, current state: %s", a.name, a.state)
 	}
 
 	atomic.StoreInt32(&a.isAborted, 0)
@@ -110,7 +110,7 @@ func (a *Agent) Run(ctx context.Context, prompt string) error {
 	}
 
 	if len(results) == 0 {
-		return errors.New("No steps executed")
+		return errors.New("no steps executed")
 	}
 
 	a.log.Debugf("agent step result: %v", strings.Join(results, "\n"))

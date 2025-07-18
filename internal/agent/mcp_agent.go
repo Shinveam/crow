@@ -5,23 +5,23 @@ import (
 	"encoding/json"
 	"fmt"
 
-	mcpconfig "crow/internal/config"
+	"crow/internal/config"
 	"crow/internal/schema"
-	tool2 "crow/internal/tool"
+	"crow/internal/tool"
 )
 
 type MCPAgent struct {
-	mcpConfig        *mcpconfig.McpConfig
-	mcpClient        *tool2.MCPClient
-	tools            map[string]tool2.Caller
+	mcpConfig        *config.McpConfig
+	mcpClient        *tool.MCPClient
+	tools            map[string]tool.Caller
 	specialToolNames []string
 }
 
 func NewMCPAgent(ctx context.Context) (*MCPAgent, error) {
-	terminateTool := tool2.NewTerminate()
-	curTimeTool := tool2.NewCurrentTime()
+	terminateTool := tool.NewTerminate()
+	curTimeTool := tool.NewCurrentTime()
 	agent := &MCPAgent{
-		tools: map[string]tool2.Caller{
+		tools: map[string]tool.Caller{
 			terminateTool.GetName(): terminateTool,
 			curTimeTool.GetName():   curTimeTool,
 		},
@@ -35,9 +35,9 @@ func NewMCPAgent(ctx context.Context) (*MCPAgent, error) {
 }
 
 func (m *MCPAgent) initializeMCPClient(ctx context.Context, serverName, version string) error {
-	m.mcpConfig = mcpconfig.NewMCPServerConfig()
+	m.mcpConfig = config.NewMCPServerConfig()
 	// 连接到mcp server
-	m.mcpClient = tool2.NewMCPClient(serverName, version)
+	m.mcpClient = tool.NewMCPClient(serverName, version)
 	if err := m.connectMCPServer(ctx); err != nil {
 		return err
 	}
@@ -72,14 +72,6 @@ func (m *MCPAgent) connectMCPServer(ctx context.Context) error {
 		}
 	}
 	return nil
-}
-
-func (m *MCPAgent) GetMCPServerPrompt() string {
-	var prompt string
-	for _, v := range m.mcpClient.Prompts {
-		prompt += v
-	}
-	return prompt
 }
 
 func (m *MCPAgent) GetTools() []schema.Tool {

@@ -14,7 +14,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	"crow/internal/asr"
-	log2 "crow/pkg/log"
+	"crow/pkg/log"
 )
 
 // 阿里 Paraformer 实时语音识别 WebSocket API 文档
@@ -27,7 +27,7 @@ const (
 
 type Paraformer struct {
 	cfg *asr.Config
-	log *log2.Logger
+	log *log.Logger
 
 	conn     *websocket.Conn
 	listener asr.Listener
@@ -44,7 +44,7 @@ type Paraformer struct {
 	silenceCount    int
 }
 
-func NewParaformer(listener asr.Listener, log *log2.Logger) *Paraformer {
+func NewParaformer(listener asr.Listener, log *log.Logger) *Paraformer {
 	return &Paraformer{
 		listener:  listener,
 		connectID: fmt.Sprintf("%d", time.Now().UnixNano()),
@@ -232,11 +232,11 @@ func (p *Paraformer) initConnection(ctx context.Context) error {
 
 	p.log.Debugf("init asr succeed, connect_id: %s, req_id: %s", p.connectID, p.reqID)
 
-	go p.readMessage()
+	go p.readMessage(ctx)
 	return nil
 }
 
-func (p *Paraformer) readMessage() {
+func (p *Paraformer) readMessage(ctx context.Context) {
 	p.log.Info("paraformer read message started")
 
 	defer func() {
@@ -276,7 +276,7 @@ func (p *Paraformer) readMessage() {
 			p.log.Errorf("failed to resolve the event: %v", err)
 			continue
 		}
-		if p.handleEvent(event) {
+		if p.handleEvent(ctx, event) {
 			return
 		}
 	}
@@ -365,7 +365,7 @@ func (p *Paraformer) generateFinishTaskCmd() (string, error) {
 }
 
 // 处理事件
-func (p *Paraformer) handleEvent(event Event) bool {
+func (p *Paraformer) handleEvent(ctx context.Context, event Event) bool {
 	switch event.Header.Event {
 	case "result-generated":
 		text := event.Payload.Output.Sentence.Text
@@ -378,11 +378,11 @@ func (p *Paraformer) handleEvent(event Event) bool {
 		if event.Payload.Output.Sentence.SentenceEnd {
 			state = asr.StateSentenceEnd
 		}
-		if finished := p.listener.OnAsrResult(text, state); finished {
+		if finished := p.listener.OnAsrResult(ctx, text, state); finished {
 			return true
 		}
 	case "task-finished":
-		p.listener.OnAsrResult("", asr.StateCompleted)
+		p.listener.OnAsrResult(ctx, "", asr.StateCompleted)
 		return true
 	case "task-failed":
 		if event.Header.ErrorMessage != "" {
@@ -390,7 +390,7 @@ func (p *Paraformer) handleEvent(event Event) bool {
 		} else {
 			p.setErrorAndClose(errors.New("the task failed due to an unknown reason"))
 		}
-		p.listener.OnAsrResult("", asr.StateCompleted)
+		p.listener.OnAsrResult(ctx, "", asr.StateCompleted)
 		return true
 	default:
 		p.log.Infof("unexpected events: %v", event)
