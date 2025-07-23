@@ -17,7 +17,7 @@ type MCPAgent struct {
 	specialToolNames []string
 }
 
-func NewMCPAgent(ctx context.Context) (*MCPAgent, error) {
+func NewMCPAgent(ctx context.Context, headers map[string]string) (*MCPAgent, error) {
 	terminateTool := tool.NewTerminate()
 	curTimeTool := tool.NewCurrentTime()
 	agent := &MCPAgent{
@@ -27,17 +27,17 @@ func NewMCPAgent(ctx context.Context) (*MCPAgent, error) {
 		},
 		specialToolNames: []string{terminateTool.GetName()},
 	}
-	err := agent.initializeMCPClient(ctx, "mcp", "1.0.0")
+	err := agent.initializeMCPClient(ctx, "mcp", "1.0.0", headers)
 	if err != nil {
 		return nil, err
 	}
 	return agent, nil
 }
 
-func (m *MCPAgent) initializeMCPClient(ctx context.Context, serverName, version string) error {
+func (m *MCPAgent) initializeMCPClient(ctx context.Context, serverName, version string, headers map[string]string) error {
 	m.mcpConfig = config.NewMCPServerConfig()
 	// 连接到mcp server
-	m.mcpClient = tool.NewMCPClient(serverName, version)
+	m.mcpClient = tool.NewMCPClient(serverName, version, headers)
 	if err := m.connectMCPServer(ctx); err != nil {
 		return err
 	}

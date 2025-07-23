@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/mark3labs/mcp-go/client"
+	"github.com/mark3labs/mcp-go/client/transport"
 	"github.com/mark3labs/mcp-go/mcp"
 
 	"crow/internal/schema"
@@ -53,6 +54,7 @@ type MCPClient struct {
 	// 初始化MCP客户端的参数
 	serverName string
 	version    string
+	headers    map[string]string
 	// 连接管理
 	sessions      map[string]*client.Client // k: serverId, v: MCP connect client
 	session2Tools map[string][]string       // k: serverId, v: list of tool's name
@@ -61,10 +63,11 @@ type MCPClient struct {
 	Tools   map[string]Caller // k: tool's name, v: MCPClientTool
 }
 
-func NewMCPClient(serverName, version string) *MCPClient {
+func NewMCPClient(serverName, version string, headers map[string]string) *MCPClient {
 	return &MCPClient{
 		serverName: serverName,
 		version:    version,
+		headers:    headers,
 		sessions:   make(map[string]*client.Client),
 	}
 }
@@ -101,7 +104,7 @@ func (m *MCPClient) ConnectSSE(ctx context.Context, serverId, serverUrl string) 
 			return fmt.Errorf("failed to disconnect server %s: %v", serverId, err)
 		}
 	}
-	mcpClient, err := client.NewSSEMCPClient(serverUrl)
+	mcpClient, err := client.NewSSEMCPClient(serverUrl, transport.WithHeaders(m.headers))
 	if err != nil {
 		return fmt.Errorf("new sse mcp client failed: %v", err)
 	}
@@ -121,7 +124,7 @@ func (m *MCPClient) ConnectStreamableHTTP(ctx context.Context, serverId, baseUrl
 			return fmt.Errorf("failed to disconnect server %s: %v", serverId, err)
 		}
 	}
-	mcpClient, err := client.NewStreamableHttpClient(baseUrl)
+	mcpClient, err := client.NewStreamableHttpClient(baseUrl, transport.WithHTTPHeaders(m.headers))
 	if err != nil {
 		return fmt.Errorf("new streamable http client failed: %v", err)
 	}

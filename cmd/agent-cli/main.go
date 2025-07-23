@@ -56,7 +56,7 @@ func initAgent(cfg *config.Config) *agent.Agent {
 		}
 	}
 	llmClient := openai.NewLLM(llmCfg.Model, llmCfg.APIKey, llmCfg.BaseURL, true)
-	mcpReAct, err := agent.NewMCPAgent(context.Background())
+	mcpReAct, err := agent.NewMCPAgent(context.Background(), nil)
 	if err != nil {
 		panic(fmt.Errorf("failed to create mcp agent: %v", err))
 	}

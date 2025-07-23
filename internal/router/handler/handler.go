@@ -66,7 +66,7 @@ func (h *Handler) initAgent(ctx context.Context) error {
 		}
 	}
 	llm := openai.NewLLM(llmCfg.Model, llmCfg.APIKey, llmCfg.BaseURL, true)
-	mcpReAct, err := agent.NewMCPAgent(ctx)
+	mcpReAct, err := agent.NewMCPAgent(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("failed to create mcp agent: %v", err)
 	}
