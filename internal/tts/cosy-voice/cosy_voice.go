@@ -157,7 +157,7 @@ func (c *CosyVoice) initConnection(ctx context.Context) error {
 
 	header := make(http.Header)
 	header.Add("X-DashScope-DataInspection", "enable")
-	header.Add("Authorization", fmt.Sprintf("bearer %s", c.cfg.APIKey))
+	header.Add("Authorization", fmt.Sprintf("bearer %s", c.cfg.ApiKey))
 
 	var (
 		conn *websocket.Conn

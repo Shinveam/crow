@@ -1,6 +1,10 @@
 package asr
 
-import "context"
+import (
+	"context"
+
+	"crow/internal/config"
+)
 
 // State asr识别状态
 type State int
@@ -19,7 +23,7 @@ type Listener interface {
 }
 
 type Config struct {
-	APIKey string
+	config.AsrConfig
 	// 以下为可选参数
 	Language   string // 语种
 	Accent     string // 方言

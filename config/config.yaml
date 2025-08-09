@@ -11,6 +11,9 @@ selected_module:
 asr:
   paraformer:
     api_key: <your api_key>
+  doubao:
+    app_id: <your app_id>
+    access_token: <your access_token>
 
 llm:
   qwen:
@@ -21,6 +24,10 @@ llm:
 tts:
   cosy_voice:
     api_key: <your api_key>
+  doubao:
+    app_id: <your app_id>
+    token: <your access_token>
+    cluster: <your cluster>
 
 cmd_exit:
   - "退出"

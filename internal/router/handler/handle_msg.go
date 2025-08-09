@@ -75,21 +75,22 @@ func (h *Handler) handleHelloMessage(ctx context.Context) error {
 	h.enableTts = data.EnableTts
 
 	if data.EnableAsr {
-		var asrApiKey string
-		if v, ok := h.cfg.SelectedModule["asr"]; ok {
-			if cfg, ok := h.cfg.Asr[v]; ok {
-				asrApiKey = cfg.ApiKey
-			}
-		}
-		asrCfg := h.asrProvider.SetConfig(&asr.Config{
-			APIKey:     asrApiKey,
+		asrCfg := &asr.Config{
 			Language:   data.AsrParams.Language,
 			Accent:     data.AsrParams.Accent,
 			SampleRate: data.AsrParams.SampleRate,
 			Format:     data.AsrParams.Format,
 			EnablePunc: data.AsrParams.EnablePunc,
 			VadEos:     data.AsrParams.VadEos,
-		})
+		}
+		if v, ok := h.cfg.SelectedModule["asr"]; ok {
+			if cfg, ok := h.cfg.Asr[v]; ok {
+				asrCfg.ApiKey = cfg.ApiKey
+				asrCfg.AppID = cfg.AppID
+				asrCfg.AccessToken = cfg.AccessToken
+			}
+		}
+		asrCfg = h.asrProvider.SetConfig(asrCfg)
 
 		msg.AsrParams.Language = asrCfg.Language
 		msg.AsrParams.Accent = asrCfg.Accent
@@ -105,14 +106,7 @@ func (h *Handler) handleHelloMessage(ctx context.Context) error {
 
 	// 只有启用了tts才需要设置
 	if data.EnableTts {
-		var ttsApiKey string
-		if v, ok := h.cfg.SelectedModule["tts"]; ok {
-			if cfg, ok := h.cfg.Tts[v]; ok {
-				ttsApiKey = cfg.ApiKey
-			}
-		}
-		ttsCfg := h.ttsProvider.SetConfig(&tts.Config{
-			APIKey:     ttsApiKey,
+		ttsCfg := &tts.Config{
 			Speaker:    data.TtsParams.Speaker,
 			Speed:      data.TtsParams.Speed,
 			Volume:     data.TtsParams.Volume,
@@ -120,7 +114,17 @@ func (h *Handler) handleHelloMessage(ctx context.Context) error {
 			SampleRate: data.TtsParams.SampleRate,
 			Format:     data.TtsParams.Format,
 			Language:   data.TtsParams.Language,
-		})
+		}
+		if v, ok := h.cfg.SelectedModule["tts"]; ok {
+			if cfg, ok := h.cfg.Tts[v]; ok {
+				ttsCfg.ApiKey = cfg.ApiKey
+				ttsCfg.AppID = cfg.AppID
+				ttsCfg.Token = cfg.Token
+				ttsCfg.Cluster = cfg.Cluster
+			}
+		}
+		ttsCfg = h.ttsProvider.SetConfig(ttsCfg)
+
 		msg.TtsParams.Speaker = ttsCfg.Speaker
 		msg.TtsParams.Speed = ttsCfg.Speed
 		msg.TtsParams.Volume = ttsCfg.Volume
@@ -164,6 +168,11 @@ func (h *Handler) handleChatMessage(ctx context.Context, text string) error {
 		h.log.Errorf("agent run error: %v", err)
 	}
 
+	if h.closeAfterChat { // 对话结束后关闭连接
+		h.log.Info("close after chat")
+		h.close()
+		return nil
+	}
 	// agent运行完成后，需要开启服务端接收数据以便后续继续请求
 	atomic.StoreInt32(&h.serverStopRecv, 0)
 	return nil

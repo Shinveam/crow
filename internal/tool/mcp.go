@@ -2,7 +2,6 @@ package tool
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -163,11 +162,6 @@ func (m *MCPClient) initialize(ctx context.Context, serverId string) error {
 			return fmt.Errorf("get tools failed: %v", err)
 		}
 	}
-	// if initResult.Capabilities.Prompts != nil {
-	// 	if err = m.getPrompt(ctx, serverId); err != nil {
-	// 		return err
-	// 	}
-	// }
 	return nil
 }
 
@@ -208,38 +202,6 @@ func (m *MCPClient) getTools(ctx context.Context, serverId string) error {
 		}
 		m.Tools[t.Name] = NewMCPClientTool(mcpClient, tool)
 		m.session2Tools[serverId] = append(m.session2Tools[serverId], t.Name)
-	}
-	return nil
-}
-
-func (m *MCPClient) getPrompt(ctx context.Context, serverId string) error {
-	if serverId == "" {
-		return errors.New("server id is required")
-	}
-	mcpClient, ok := m.sessions[serverId]
-	if !ok {
-		return fmt.Errorf("server id %s is not exists", serverId)
-	}
-
-	promptsRequest := mcp.ListPromptsRequest{}
-	prompts, err := mcpClient.ListPrompts(ctx, promptsRequest)
-	if err != nil {
-		return err
-	}
-
-	if m.Prompts == nil {
-		m.Prompts = make(map[string]string)
-	}
-	var formattedPrompt string
-	for _, prompt := range prompts.Prompts {
-		formattedPrompt += fmt.Sprintf("%s: %s\n", prompt.Name, prompt.Description)
-		arguments, _ := json.MarshalIndent(&prompt.Arguments, "", "    ")
-		if len(arguments) != 0 {
-			formattedPrompt += fmt.Sprintf("参数:\n%v\n", string(arguments))
-		}
-	}
-	if formattedPrompt != "" {
-		m.Prompts[serverId] = formattedPrompt
 	}
 	return nil
 }

@@ -26,7 +26,9 @@ type Config struct {
 }
 
 type AsrConfig struct {
-	ApiKey string `yaml:"api_key"`
+	ApiKey      string `yaml:"api_key"`      // paraformer 需要
+	AppID       string `yaml:"app_id"`       // doubao 需要
+	AccessToken string `yaml:"access_token"` // doubao 需要
 }
 
 type LLMConfig struct {
@@ -36,7 +38,10 @@ type LLMConfig struct {
 }
 
 type TtsConfig struct {
-	ApiKey string `yaml:"api_key"`
+	ApiKey  string `yaml:"api_key"` // cosy-voice 需要
+	AppID   string `yaml:"app_id"`  // doubao 需要
+	Token   string `yaml:"token"`   // doubao 需要
+	Cluster string `yaml:"cluster"` // doubao 需要
 }
 
 var (
@@ -153,6 +158,8 @@ func printConfig() {
 	for name, cfg := range config.Asr {
 		fmt.Printf("  - %s:\n", name)
 		fmt.Printf("    api_key: %s\n", cfg.ApiKey)
+		fmt.Printf("    app_id: %s\n", cfg.AppID)
+		fmt.Printf("    access_token: %s\n", cfg.AccessToken)
 	}
 	fmt.Println("• LLM配置:")
 	for name, cfg := range config.LLM {
@@ -165,5 +172,8 @@ func printConfig() {
 	for name, cfg := range config.Tts {
 		fmt.Printf("  - %s:\n", name)
 		fmt.Printf("    api_key: %s\n", cfg.ApiKey)
+		fmt.Printf("    app_id: %s\n", cfg.AppID)
+		fmt.Printf("    token: %s\n", cfg.Token)
+		fmt.Printf("    cluster: %s\n", cfg.Cluster)
 	}
 }

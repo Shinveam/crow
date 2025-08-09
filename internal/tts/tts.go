@@ -1,6 +1,10 @@
 package tts
 
-import "context"
+import (
+	"context"
+
+	"crow/internal/config"
+)
 
 // State tts合成状态
 type State int
@@ -18,7 +22,7 @@ type Listener interface {
 
 // Config 需要请求tts的相关配置
 type Config struct {
-	APIKey string
+	config.TtsConfig
 	// 可选参数
 	Speaker    string  // 发音人
 	Speed      float32 // 语速

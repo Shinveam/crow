@@ -177,7 +177,7 @@ func (p *Paraformer) initConnection(ctx context.Context) error {
 
 	header := make(http.Header)
 	header.Add("X-DashScope-DataInspection", "enable")
-	header.Add("Authorization", fmt.Sprintf("bearer %s", p.cfg.APIKey))
+	header.Add("Authorization", fmt.Sprintf("bearer %s", p.cfg.ApiKey))
 
 	var (
 		conn *websocket.Conn
@@ -255,7 +255,7 @@ func (p *Paraformer) readMessage(ctx context.Context) {
 	for {
 		// 检查连接状态，避免在连接关闭后继续读取
 		p.lock.Lock()
-		if !p.isRunning && p.conn == nil {
+		if !p.isRunning || p.conn == nil {
 			p.lock.Unlock()
 			p.log.Info("recognition has ended or the connection has been closed, exiting the read loop")
 			return
@@ -292,6 +292,10 @@ func (p *Paraformer) sendAudioData(data []byte, isLast bool) error {
 			p.log.Errorf("asr send audio data panic: %v", err)
 		}
 	}()
+
+	if p.conn == nil {
+		return errors.New("connection not initialized")
+	}
 
 	if err := p.conn.WriteMessage(websocket.BinaryMessage, data); err != nil {
 		return fmt.Errorf("send audio error: %v", err)

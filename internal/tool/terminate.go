@@ -44,7 +44,6 @@ func (t *Terminate) Execute(ctx context.Context, arguments map[string]any) (stri
 	if arguments == nil {
 		return "", fmt.Errorf("missing arguments for tool call: %s", t.name)
 	}
-
 	status, ok := arguments["status"].(string)
 	if !ok || (status != "success" && status != "failure") {
 		return "", fmt.Errorf("invalid status value: %s", status)

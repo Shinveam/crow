@@ -47,5 +47,6 @@ func (c *CurrentTime) Execute(ctx context.Context, arguments map[string]any) (st
 			local = loc
 		}
 	}
+
 	return time.Now().In(local).Format("2006-01-02 15:04:05"), nil
 }

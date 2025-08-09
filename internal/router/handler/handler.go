@@ -10,12 +10,14 @@ import (
 
 	"crow/internal/agent"
 	"crow/internal/asr"
+	doubaoasr "crow/internal/asr/doubao"
 	"crow/internal/asr/paraformer"
 	"crow/internal/config"
 	"crow/internal/llm/openai"
 	"crow/internal/prompt"
 	"crow/internal/tts"
 	cosyvoice "crow/internal/tts/cosy-voice"
+	doubaotts "crow/internal/tts/doubao"
 	"crow/pkg/log"
 	"crow/pkg/util"
 )
@@ -53,8 +55,19 @@ func NewHandler(cfg *config.Config, log *log.Logger, conn Connection) *Handler {
 		sessionID: uuid.New().String(),
 		stopChan:  make(chan struct{}),
 	}
-	handler.asrProvider = paraformer.NewParaformer(handler, log)
-	handler.ttsProvider = cosyvoice.NewCosyVoice(handler, log)
+	switch cfg.SelectedModule["asr"] {
+	case "paraformer":
+		handler.asrProvider = paraformer.NewParaformer(handler, log)
+	case "doubao":
+		handler.asrProvider = doubaoasr.NewDoubao(handler, log)
+	}
+
+	switch cfg.SelectedModule["tts"] {
+	case "cosy_voice":
+		handler.ttsProvider = cosyvoice.NewCosyVoice(handler, log)
+	case "doubao":
+		handler.ttsProvider = doubaotts.NewDoubao(handler, log)
+	}
 	return handler
 }
 
@@ -248,11 +261,6 @@ func (h *Handler) OnTtsResult(data []byte, state tts.State) bool {
 		h.log.Errorf("failed to send tts message: %v", err)
 	}
 	if state == tts.StateCompleted {
-		if h.closeAfterChat { // 对话结束后关闭连接
-			h.log.Info("close after chat")
-			h.close()
-			return true
-		}
 		_ = h.ttsProvider.Reset()
 		return true
 	}

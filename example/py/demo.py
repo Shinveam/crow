@@ -2,7 +2,7 @@
 作用：模拟终端语音请求
 注意：
 1. 当前脚本为流式语音测试脚本，仅支持 wav 的音频输入作为 ASR 使用，wav 的采样率为16000.
-2. TTS 输出音频格式仅支持 pcm，pcm 音频采样率为 16000.
+2. TTS 输出音频格式仅支持 pcm，pcm 音频采样率为 16000，具体可根据第三方厂商更改采样率.
 """
 import base64
 import json
@@ -114,7 +114,7 @@ def send_hello(ws):
             'accent': 'mandarin'
         },
         'tts_params': {
-            'speaker': 'longlaotie_v2', # longxiaochun_v2
+            'speaker': '', # longlaotie_v2
             'format': 'pcm',
             'speed': 1.0,
             'volume': 50,
