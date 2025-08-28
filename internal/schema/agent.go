@@ -92,22 +92,43 @@ type Memory struct {
 }
 
 func NewMemory(maxMessages int) *Memory {
-	return &Memory{MaxMessages: maxMessages}
+	// 至少保留 5 条消息
+	if maxMessages <= 5 {
+		// 默认保留 20 条消息
+		maxMessages = 20
+	}
+	return &Memory{
+		Messages:    make([]Message, 0, maxMessages),
+		MaxMessages: maxMessages,
+	}
 }
 
-func (m *Memory) AddMessage(msgs ...Message) {
-	m.Messages = append(m.Messages, msgs...)
-	if len(m.Messages) > m.MaxMessages {
-		m.Messages = m.Messages[len(m.Messages)-m.MaxMessages:]
+func (m *Memory) AddMessage(messages ...Message) {
+	m.Messages = append(m.Messages, messages...)
+	if len(m.Messages) <= m.MaxMessages {
+		return
 	}
-	// 去除头部的 tool 消息，避免 llm 调用出错
-	for len(m.Messages) > 0 && m.Messages[0].Role == RoleTool {
-		m.Messages = m.Messages[1:]
+
+	// 删除超过 maxMessages 的消息
+	// 按对话轮次删除，对话轮次除 system 消息外，必是以 user 消息开头
+	var systemMessages []Message
+	isDelUserMessage := false
+	for i, msg := range messages {
+		switch msg.Role {
+		case RoleSystem:
+			systemMessages = append(systemMessages, msg)
+		case RoleUser:
+			if isDelUserMessage && len(systemMessages)+len(m.Messages[i:]) <= m.MaxMessages {
+				m.Messages = append(systemMessages, m.Messages[i:]...)
+				return
+			}
+			isDelUserMessage = true
+		}
 	}
 }
 
 func (m *Memory) Clear() {
-	m.Messages = []Message{}
+	m.Messages = make([]Message, 0, m.MaxMessages)
 }
 
 func (m *Memory) GetRecentMessages(n int) []Message {
