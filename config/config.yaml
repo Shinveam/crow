@@ -28,6 +28,11 @@ tts:
     app_id: <your app_id>
     token: <your access_token>
     cluster: <your cluster>
+  doubao_stream: # 双流式，如果使用豆包，推荐用这个
+    app_id: <your app_id>
+    token: <your access_token>
+    cluster: <your cluster>
+    resource_id: volc.service_type.10029
 
 cmd_exit:
   - "退出"

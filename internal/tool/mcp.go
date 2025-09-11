@@ -58,8 +58,7 @@ type MCPClient struct {
 	sessions      map[string]*client.Client // k: serverId, v: MCP connect client
 	session2Tools map[string][]string       // k: serverId, v: list of tool's name
 	// 获取到的MCP Server的必要数据
-	Prompts map[string]string // k: serverId, v: prompt that is formatted
-	Tools   map[string]Caller // k: tool's name, v: MCPClientTool
+	Tools map[string]Caller // k: tool's name, v: MCPClientTool
 }
 
 func NewMCPClient(serverName, version string, headers map[string]string) *MCPClient {
@@ -216,7 +215,6 @@ func (m *MCPClient) Disconnect(serverId string) error {
 		}
 	}
 	delete(m.sessions, serverId)
-	delete(m.Prompts, serverId)
 	for _, toolName := range m.session2Tools[serverId] {
 		delete(m.Tools, toolName)
 	}

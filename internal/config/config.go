@@ -38,10 +38,11 @@ type LLMConfig struct {
 }
 
 type TtsConfig struct {
-	ApiKey  string `yaml:"api_key"` // cosy-voice 需要
-	AppID   string `yaml:"app_id"`  // doubao 需要
-	Token   string `yaml:"token"`   // doubao 需要
-	Cluster string `yaml:"cluster"` // doubao 需要
+	ApiKey     string `yaml:"api_key"`     // cosy-voice 需要
+	AppID      string `yaml:"app_id"`      // doubao 需要
+	Token      string `yaml:"token"`       // doubao 需要
+	Cluster    string `yaml:"cluster"`     // doubao 需要
+	ResourceID string `yaml:"resource_id"` // doubao 需要
 }
 
 var (

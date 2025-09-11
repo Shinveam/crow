@@ -67,6 +67,8 @@ func NewHandler(cfg *config.Config, log *log.Logger, conn Connection) *Handler {
 		handler.ttsProvider = cosyvoice.NewCosyVoice(handler, log)
 	case "doubao":
 		handler.ttsProvider = doubaotts.NewDoubao(handler, log)
+	case "doubao_stream":
+		handler.ttsProvider = doubaotts.NewDoubaoStream(handler, log)
 	}
 	return handler
 }

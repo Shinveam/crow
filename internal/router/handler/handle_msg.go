@@ -121,6 +121,7 @@ func (h *Handler) handleHelloMessage(ctx context.Context) error {
 				ttsCfg.AppID = cfg.AppID
 				ttsCfg.Token = cfg.Token
 				ttsCfg.Cluster = cfg.Cluster
+				ttsCfg.ResourceID = cfg.ResourceID
 			}
 		}
 		ttsCfg = h.ttsProvider.SetConfig(ttsCfg)
