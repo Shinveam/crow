@@ -257,7 +257,7 @@ func (d *DoubaoStream) readMessage() {
 	for {
 		// 检查连接状态，避免在连接关闭后继续读取
 		d.lock.Lock()
-		if !d.isRunning && d.conn == nil {
+		if !d.isRunning || d.conn == nil {
 			d.lock.Unlock()
 			d.log.Info("流式识别已结束或连接已关闭，退出读取循环")
 			return

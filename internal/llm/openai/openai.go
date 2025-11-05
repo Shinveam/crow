@@ -44,6 +44,7 @@ func NewLLM(model, apiKey, baseUrl string, enableStream bool) *LLM {
 	}
 	return &LLM{
 		Model:             model,
+		MaxTokens:         10000,
 		APIKey:            apiKey,
 		BaseURL:           baseUrl,
 		MaxReties:         3,

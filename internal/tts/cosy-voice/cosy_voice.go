@@ -258,7 +258,7 @@ func (c *CosyVoice) readMessage() {
 	for {
 		// 检查连接状态，避免在连接关闭后继续读取
 		c.lock.Lock()
-		if !c.isRunning && c.conn == nil {
+		if !c.isRunning || c.conn == nil {
 			c.lock.Unlock()
 			c.log.Info("流式识别已结束或连接已关闭，退出读取循环")
 			return

@@ -138,6 +138,9 @@ func (h *Handler) listenClientMessages(ctx context.Context) {
 		case <-h.stopChan:
 			return
 		default:
+			if atomic.LoadInt32(&h.serverStopRecv) == 1 {
+				continue
+			}
 			messageType, message, err := h.conn.ReadMessage()
 			if err != nil {
 				h.log.Errorf("failed to read message: %v", err)
@@ -158,9 +161,6 @@ func (h *Handler) listenClientAudioMessages(ctx context.Context) {
 		case <-h.stopChan:
 			return
 		case audio := <-h.clientAudioQueue:
-			if atomic.LoadInt32(&h.serverStopRecv) == 1 {
-				continue
-			}
 			if err := h.asrProvider.SendAudio(ctx, audio); err != nil {
 				h.log.Errorf("failed to send audio data: %v", err)
 			}
@@ -191,7 +191,7 @@ func (h *Handler) OnAsrResult(ctx context.Context, result string, state asr.Stat
 		state = asr.StateCompleted
 		result = "长时间未检测到用户说话，请礼貌的结束对话"
 	}
-	if result == "" {
+	if result == "" && state == asr.StateProcessing {
 		return false
 	}
 
@@ -201,11 +201,9 @@ func (h *Handler) OnAsrResult(ctx context.Context, result string, state asr.Stat
 	_ = h.sendAsrMessage(result, int(state))
 	switch state {
 	case asr.StateSentenceEnd:
-		atomic.StoreInt32(&h.serverStopRecv, 1)
 		_ = h.handleChatMessage(ctx, result)
 		return false
 	case asr.StateCompleted:
-		atomic.StoreInt32(&h.serverStopRecv, 1)
 		_ = h.asrProvider.Reset() // 重置ASR，准备下一次识别
 		_ = h.handleChatMessage(ctx, result)
 		return true
@@ -215,13 +213,14 @@ func (h *Handler) OnAsrResult(ctx context.Context, result string, state asr.Stat
 
 func (h *Handler) OnAgentResult(ctx context.Context) {
 	for {
-		text, ok := h.agent.GetStreamReplyText()
-		if !ok {
-			break
-		}
 		// 服务停止下发后直接跳出循环
 		if atomic.LoadInt32(&h.serverStopSend) == 1 {
 			continue
+		}
+
+		text, ok := h.agent.GetStreamReplyText()
+		if !ok {
+			break
 		}
 		if h.agent.IsFinalFlag(text) {
 			if h.enableTts {
@@ -235,10 +234,6 @@ func (h *Handler) OnAgentResult(ctx context.Context) {
 		}
 
 		if !h.enableTts {
-			continue
-		}
-		// 再次判断服务端语音是否停止，否则不再合成
-		if atomic.LoadInt32(&h.serverStopSend) == 1 {
 			continue
 		}
 		// 去合成语音
@@ -290,8 +285,8 @@ func (h *Handler) isExit(text string) bool {
 	text = util.RemoveAllPunctuation(text)
 	for _, cmd := range h.cfg.CMDExit {
 		if text == cmd {
-			h.log.Info("exit dialogue")
-			h.close()
+			h.closeAfterChat = true
+			atomic.StoreInt32(&h.serverStopRecv, 1)
 			return true
 		}
 	}

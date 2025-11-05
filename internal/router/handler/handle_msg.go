@@ -148,8 +148,10 @@ func (h *Handler) handleChatMessage(ctx context.Context, text string) error {
 		return errors.New("empty text message")
 	}
 
+	atomic.StoreInt32(&h.serverStopRecv, 1)
+
 	if h.isExit(text) {
-		return errors.New("user request exit")
+		h.log.Info("user request exit")
 	}
 
 	h.chatRound++
