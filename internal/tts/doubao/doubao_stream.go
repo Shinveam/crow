@@ -240,13 +240,9 @@ func (d *DoubaoStream) sendTextData(text string) error {
 func (d *DoubaoStream) readMessage() {
 	d.log.Info("cosy voice start read message")
 
-	var isSentTtsStateCompleted bool // 是否已经发送的结束状态
 	defer func() {
 		if err := recover(); err != nil {
 			d.log.Errorf("tts read message panic: %v", err)
-		}
-		if !isSentTtsStateCompleted {
-			d.listener.OnTtsResult(nil, tts.StateCompleted)
 		}
 		d.lock.Lock()
 		d.isRunning = false
@@ -295,7 +291,6 @@ func (d *DoubaoStream) readMessage() {
 			return
 		}
 		if newMsg.EventType == EventType_SessionFinished {
-			isSentTtsStateCompleted = true
 			if finished := d.listener.OnTtsResult(nil, tts.StateCompleted); finished {
 				return
 			}

@@ -284,13 +284,9 @@ func (d *Doubao) sendMessage(ctx context.Context, text string) error {
 func (d *Doubao) readMessage(conn *websocket.Conn) {
 	d.log.Info("doubao tts start read message")
 
-	var isSentTtsStateCompleted bool // 是否已经发送的结束状态
 	defer func() {
 		if err := recover(); err != nil {
 			d.log.Errorf("tts read message panic: %v", err)
-		}
-		if !isSentTtsStateCompleted {
-			d.listener.OnTtsResult(nil, tts.StateCompleted)
 		}
 		d.log.Info("doubao tts read message stopped")
 	}()
@@ -317,7 +313,6 @@ func (d *Doubao) readMessage(conn *websocket.Conn) {
 		state := tts.StateProcessing
 		if result.IsLast {
 			state = tts.StateCompleted
-			isSentTtsStateCompleted = true
 		}
 
 		if finished := d.listener.OnTtsResult(result.Audio, state); finished {

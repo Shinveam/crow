@@ -350,16 +350,10 @@ func (d *Doubao) initConnection(ctx context.Context) error {
 func (d *Doubao) readMessage(ctx context.Context) {
 	d.log.Info("doubao read message started")
 
-	var isSentAsrStateCompleted bool // 是否已经发送的结束状态
 	defer func() {
 		if err := recover(); err != nil {
 			d.log.Errorf("asr read goroutine panic: %v", err)
 		}
-
-		if !isSentAsrStateCompleted {
-			d.listener.OnAsrResult(ctx, "", asr.StateCompleted)
-		}
-
 		d.lock.Lock()
 		d.isRunning = false
 		if d.conn != nil {
@@ -412,7 +406,6 @@ func (d *Doubao) readMessage(ctx context.Context) {
 		}
 		if result.IsLast {
 			state = asr.StateCompleted
-			isSentAsrStateCompleted = true
 		}
 
 		if finished := d.listener.OnAsrResult(ctx, result.Text, state); finished {
