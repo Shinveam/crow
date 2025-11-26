@@ -41,10 +41,9 @@ type CosyVoice struct {
 	taskID      string
 }
 
-func NewCosyVoice(listener tts.Listener, log *log.Logger) *CosyVoice {
+func NewCosyVoice(log *log.Logger) *CosyVoice {
 	return &CosyVoice{
 		log:       log,
-		listener:  listener,
 		connectID: fmt.Sprintf("%d", time.Now().UnixNano()),
 	}
 }
@@ -70,6 +69,10 @@ func (c *CosyVoice) SetConfig(cfg *tts.Config) *tts.Config {
 	}
 	c.cfg = cfg
 	return c.cfg
+}
+
+func (c *CosyVoice) SetListener(listener tts.Listener) {
+	c.listener = listener
 }
 
 func (c *CosyVoice) ToTTS(ctx context.Context, text string) error {
@@ -171,7 +174,7 @@ func (c *CosyVoice) initConnection(ctx context.Context) error {
 		if err == nil {
 			break
 		}
-		if i < maxRetries {
+		if i+1 < maxRetries {
 			backoffTime := time.Duration(500*(i+1)) * time.Millisecond
 			c.log.Warnf("failed to connect to the websocket, try %d/%d: %v, will try again %v", i+1, maxRetries+1, err, backoffTime)
 			time.Sleep(backoffTime)

@@ -42,10 +42,9 @@ type DoubaoStream struct {
 	sessionID   string
 }
 
-func NewDoubaoStream(listener tts.Listener, log *log.Logger) *DoubaoStream {
+func NewDoubaoStream(log *log.Logger) *DoubaoStream {
 	return &DoubaoStream{
 		log:       log,
-		listener:  listener,
 		connectID: fmt.Sprintf("%d", time.Now().UnixNano()),
 	}
 }
@@ -71,6 +70,10 @@ func (d *DoubaoStream) SetConfig(cfg *tts.Config) *tts.Config {
 	}
 	d.cfg = cfg
 	return cfg
+}
+
+func (d *DoubaoStream) SetListener(listener tts.Listener) {
+	d.listener = listener
 }
 
 func (d *DoubaoStream) ToTTS(ctx context.Context, text string) error {
@@ -130,7 +133,7 @@ func (d *DoubaoStream) initConnection(ctx context.Context) error {
 		if err == nil {
 			break
 		}
-		if i < maxRetries {
+		if i+1 < maxRetries {
 			backoffTime := time.Duration(500*(i+1)) * time.Millisecond
 			d.log.Warnf("failed to connect to the websocket, try %d/%d: %v, will try again %v", i+1, maxRetries+1, err, backoffTime)
 			time.Sleep(backoffTime)

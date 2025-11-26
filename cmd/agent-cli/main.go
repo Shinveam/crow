@@ -2,14 +2,16 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
 
 	"crow/internal/agent"
+	"crow/internal/agent/llm/openai"
+	"crow/internal/agent/prompt"
+	"crow/internal/agent/react"
 	"crow/internal/config"
-	"crow/internal/llm/openai"
-	"crow/internal/prompt"
 	log2 "crow/pkg/log"
 	"crow/pkg/util"
 )
@@ -20,15 +22,13 @@ func main() {
 		panic("failed to load config")
 	}
 
-	agt := initAgent(cfg)
-	defer func() {
-		agt.Reset()
-	}()
-	go onAgentResult(agt)
+	agt := NewCLI(cfg)
+	agt.InitAgent()
 
 	var (
 		userPrompt string
 		chatRound  int
+		isExit     bool
 	)
 	for {
 		log.Println("input your query：")
@@ -36,79 +36,95 @@ func main() {
 		userPrompt = util.RemoveAllPunctuation(strings.TrimSpace(userPrompt))
 		for _, cmd := range cfg.CMDExit {
 			if userPrompt == cmd {
-				log.Println("Good bye!")
-				return
+				isExit = true
 			}
 		}
+
 		chatRound++
-		err := agt.Run(context.Background(), userPrompt)
+		err := agt.agent.Run(context.Background(), userPrompt)
 		if err != nil {
 			log.Printf("chat round: %d\n%s\n", chatRound, err.Error())
 		}
+
+		<-agt.stop
+		if isExit {
+			break
+		}
 	}
 }
 
-func initAgent(cfg *config.Config) *agent.Agent {
+type CLI struct {
+	cfg   *config.Config
+	agent agent.Provider
+	reply string
+	stop  chan struct{}
+}
+
+func NewCLI(cfg *config.Config) *CLI {
+	return &CLI{
+		cfg:  cfg,
+		stop: make(chan struct{}, 1),
+	}
+}
+
+func (c *CLI) InitAgent() {
 	var llmCfg config.LLMConfig
-	if v, ok := cfg.SelectedModule["llm"]; ok {
-		if _, ok = cfg.LLM[v]; ok {
-			llmCfg = cfg.LLM[v]
+	if v, ok := c.cfg.SelectedModule["llm"]; ok {
+		if _, ok = c.cfg.LLM[v]; ok {
+			llmCfg = c.cfg.LLM[v]
 		}
 	}
-	llmClient := openai.NewLLM(llmCfg.Model, llmCfg.APIKey, llmCfg.BaseURL, true)
-	mcpReAct, err := agent.NewMCPAgent(context.Background(), nil)
+	llm := openai.NewOpenAI(llmCfg.Model, llmCfg.APIKey, llmCfg.BaseURL)
+	mcpReAct, err := react.NewMCPAgent(context.Background(), nil)
 	if err != nil {
-		panic(fmt.Errorf("failed to create mcp agent: %v", err))
+		fmt.Printf("failed to create mcp agent: %v\n", err)
+		return
 	}
-	morePrompt := ""
+
+	type toolInfo struct {
+		Name        string `json:"name"`
+		Description string `json:"description,omitempty"`
+		Properties  any    `json:"properties,omitempty"`
+	}
+
+	toolPrompt := ""
+	toolDesc := "<tool>\n%s\n</tool>\n\n"
 	for _, tool := range mcpReAct.GetTools() {
-		morePrompt += fmt.Sprintf("#### %s\n", tool.Function.Name)
-		if tool.Function.Description != "" {
-			morePrompt += fmt.Sprintf("* 描述: %s\n", tool.Function.Description)
+		info := toolInfo{
+			Name:        tool.Function.Name,
+			Description: tool.Function.Description,
+			Properties:  tool.Function.Parameters["properties"],
 		}
-		if properties, ok := tool.Function.Parameters["properties"].(map[string]any); ok {
-			var params string
-			for k, v := range properties {
-				if v, ok := v.(map[string]any); ok && v["description"] != nil {
-					params += fmt.Sprintf("    - %s: %s\n", k, v["description"])
-					continue
-				} else {
-					params += fmt.Sprintf("    - %s\n", k)
-				}
-			}
-			if params != "" {
-				morePrompt += fmt.Sprintf("* 参数:\n%s\n", params)
-			}
-		}
+		jsonData, _ := json.Marshal(&info)
+		toolPrompt += fmt.Sprintf(toolDesc, string(jsonData))
 	}
+
 	logger := log2.NewLogger(&log2.Option{
 		Hook:        nil,
-		Mode:        cfg.Server.Mode,
+		Mode:        c.cfg.Server.Mode,
 		ServiceName: "crow",
 		EncodeType:  log2.EncodeTypeConsole,
 	})
-	return agent.NewAgent("crow", logger, llmClient, mcpReAct,
-		agent.WithSystemPrompt(prompt.SystemPrompt+morePrompt),
-		agent.WithNextStepPrompt(prompt.NextStepPrompt),
-		agent.WithMaxObserve(500),
-		agent.WithMemoryMaxMessages(50),
-	)
+	c.agent = react.NewReActAgent("crow", logger, llm, mcpReAct,
+		react.WithSystemPrompt(fmt.Sprintf(prompt.SystemPrompt, toolPrompt)),
+		react.WithNextStepPrompt(prompt.NextStepPrompt),
+		react.WithMaxObserve(500),
+		react.WithMemoryMaxMessages(20))
+	c.agent.SetListener(c)
 }
 
-func onAgentResult(agt *agent.Agent) {
-	replyText := ""
-	for {
-		text, ok := agt.GetStreamReplyText()
-		if !ok {
-			break
-		}
-		if agt.IsFinalFlag(text) {
-			replyText = ""
-			fmt.Println()
-			continue
-		}
-		replyText += text
-		fmt.Printf("\r【Crow】: %s", replyText)
+func (c *CLI) OnAgentResult(ctx context.Context, text string, state agent.State) bool {
+	if text == "" && state != agent.StateCompleted {
+		return false
 	}
-	fmt.Println()
+	c.reply += text
+	fmt.Printf("\r【Crow】: %s", c.reply)
+
+	if state == agent.StateCompleted {
+		c.reply = ""
+		_ = c.agent.Reset()
+		c.stop <- struct{}{}
+		return true
+	}
+	return false
 }

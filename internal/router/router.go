@@ -1,10 +1,11 @@
 package router
 
 import (
+	"crow/internal/handler"
+
 	"github.com/gin-gonic/gin"
 
 	"crow/internal/config"
-	"crow/internal/router/handler"
 	"crow/pkg/log"
 )
 

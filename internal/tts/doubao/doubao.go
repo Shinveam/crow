@@ -42,10 +42,9 @@ type Doubao struct {
 	text string
 }
 
-func NewDoubao(listener tts.Listener, log *log.Logger) *Doubao {
+func NewDoubao(log *log.Logger) *Doubao {
 	return &Doubao{
 		log:       log,
-		listener:  listener,
 		connectID: fmt.Sprintf("%d", time.Now().UnixNano()),
 	}
 }
@@ -75,6 +74,10 @@ func (d *Doubao) SetConfig(cfg *tts.Config) *tts.Config {
 	}
 	d.cfg.Volume /= 50 // 豆包音量范围是[0.1~3.0]，而我们的音量范围是0-100，最大按2处理，
 	return cfg
+}
+
+func (d *Doubao) SetListener(listener tts.Listener) {
+	d.listener = listener
 }
 
 func (d *Doubao) ToTTS(ctx context.Context, text string) error {
@@ -145,7 +148,7 @@ func (d *Doubao) setupInput(text string) []byte {
 		"request": map[string]any{
 			"reqid": d.reqID,
 			"text":  text,
-			//"text_type": "plain",
+			// "text_type": "plain",
 			"operation": "submit", // submit 流式，query 非流式(一次性合成)
 		},
 	}
@@ -253,7 +256,7 @@ func (d *Doubao) sendMessage(ctx context.Context, text string) error {
 		if err == nil {
 			break
 		}
-		if i < maxRetries {
+		if i+1 < maxRetries {
 			backoffTime := time.Duration(500*(i+1)) * time.Millisecond
 			d.log.Warnf("failed to connect to the websocket, try %d/%d: %v, will try again %v", i+1, maxRetries+1, err, backoffTime)
 			time.Sleep(backoffTime)

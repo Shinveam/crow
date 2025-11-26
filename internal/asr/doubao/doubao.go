@@ -48,9 +48,8 @@ type Doubao struct {
 	silenceCount    int
 }
 
-func NewDoubao(listener asr.Listener, log *log.Logger) *Doubao {
+func NewDoubao(log *log.Logger) *Doubao {
 	return &Doubao{
-		listener:  listener,
 		connectID: fmt.Sprintf("%d", time.Now().UnixNano()),
 		log:       log,
 	}
@@ -69,6 +68,10 @@ func (d *Doubao) SetConfig(cfg *asr.Config) *asr.Config {
 	}
 	d.cfg = cfg
 	return d.cfg
+}
+
+func (d *Doubao) SetListener(listener asr.Listener) {
+	d.listener = listener
 }
 
 func (d *Doubao) SendAudio(ctx context.Context, data []byte) error {
@@ -282,7 +285,7 @@ func (d *Doubao) initConnection(ctx context.Context) error {
 			break
 		}
 
-		if i < maxRetries {
+		if i+1 < maxRetries {
 			backoffTime := time.Duration(500*(i+1)) * time.Millisecond
 			d.log.Warnf("failed to connect to the websocket, try %d/%d: %v, will try again %v", i+1, maxRetries+1, err, backoffTime)
 			time.Sleep(backoffTime)
@@ -352,12 +355,12 @@ func (d *Doubao) readMessage(ctx context.Context) {
 		if err := recover(); err != nil {
 			d.log.Errorf("asr read goroutine panic: %v", err)
 		}
-		d.lock.Lock()
 
 		if !isSentAsrStateCompleted {
 			d.listener.OnAsrResult(ctx, "", asr.StateCompleted)
 		}
 
+		d.lock.Lock()
 		d.isRunning = false
 		if d.conn != nil {
 			d.closeConnection()

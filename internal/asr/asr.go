@@ -18,7 +18,12 @@ const (
 	StateCompleted
 )
 
+// Listener 语音识别事件监听者
 type Listener interface {
+	// OnAsrResult 语音识别结果回调
+	// @param result 识别结果
+	// @param state 识别状态
+	// @return 是否不再监听语音识别事件
 	OnAsrResult(ctx context.Context, result string, state State) bool
 }
 
@@ -38,6 +43,8 @@ type Provider interface {
 	// @param cfg: 客户端需求的配置
 	// @return *Config: 实际请求的配置
 	SetConfig(cfg *Config) *Config
+	// SetListener 设置 Provider 的监听者
+	SetListener(listener Listener)
 	// SendAudio 发送音频数据
 	// @param data: 终端上传的待识别音频数据
 	SendAudio(ctx context.Context, data []byte) error

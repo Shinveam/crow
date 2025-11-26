@@ -44,9 +44,8 @@ type Paraformer struct {
 	silenceCount    int
 }
 
-func NewParaformer(listener asr.Listener, log *log.Logger) *Paraformer {
+func NewParaformer(log *log.Logger) *Paraformer {
 	return &Paraformer{
-		listener:  listener,
 		connectID: fmt.Sprintf("%d", time.Now().UnixNano()),
 		log:       log,
 	}
@@ -67,6 +66,10 @@ func (p *Paraformer) SetConfig(cfg *asr.Config) *asr.Config {
 	}
 	p.cfg = cfg
 	return p.cfg
+}
+
+func (p *Paraformer) SetListener(listener asr.Listener) {
+	p.listener = listener
 }
 
 func (p *Paraformer) SendAudio(ctx context.Context, data []byte) error {
@@ -192,7 +195,7 @@ func (p *Paraformer) initConnection(ctx context.Context) error {
 			break
 		}
 
-		if i < maxRetries {
+		if i+1 < maxRetries {
 			backoffTime := time.Duration(500*(i+1)) * time.Millisecond
 			p.log.Warnf("failed to connect to the websocket, try %d/%d: %v, will try again %v", i+1, maxRetries+1, err, backoffTime)
 			time.Sleep(backoffTime)

@@ -16,7 +16,12 @@ const (
 	StateCompleted
 )
 
+// Listener 语音合成事件监听者
 type Listener interface {
+	// OnTtsResult 语音合成结果回调
+	// @param data 合成音频数据
+	// @param state 合成状态
+	// @return 是否不再监听语音合成事件
 	OnTtsResult(data []byte, state State) bool
 }
 
@@ -38,6 +43,8 @@ type Provider interface {
 	// @param cfg: 客户端需求的配置
 	// @return *Config: 实际请求的配置
 	SetConfig(cfg *Config) *Config
+	// SetListener 设置 Provider 的监听者
+	SetListener(listener Listener)
 	// ToTTS 将文本给到 Provider 进行语音合成
 	// @param text: 待合成的文本或文本片段
 	ToTTS(ctx context.Context, text string) error

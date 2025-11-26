@@ -1,6 +1,6 @@
-<div style="text-align:center">
+<p align="center">
   <img src="assets/logo.png" width="200" />
-</div>
+</p>
 
 [![Golang 1.24.2+](https://img.shields.io/badge/Golang-1.24.2+-blue.svg)](https://www.python.org/downloads/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)  ![Alpha](https://img.shields.io/badge/Status-Alpha-red)
 
