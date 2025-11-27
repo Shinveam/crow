@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"sync/atomic"
-	"time"
 
 	"github.com/gorilla/websocket"
 
@@ -42,9 +41,7 @@ func (h *Handler) handleClientTextMessages(ctx context.Context, content string) 
 		return h.handleAbortChat()
 	case "chat":
 		// 如果有新的对话文本，则应该打断当前的对话
-		atomic.StoreInt32(&h.interrupt, 1)
-		// 延时100ms，确保tts已停止发送，避免tts持续发送上一轮的音频，导致新的对话文本所生成的音频无法及时下发
-		time.Sleep(100 * time.Millisecond)
+		_ = h.handleAbortChat()
 		return h.handleChatMessage(ctx, data.ChatText)
 	default:
 		return fmt.Errorf("unsupported message type: %s", data.Type)
@@ -149,6 +146,12 @@ func (h *Handler) handleHelloMessage(ctx context.Context) error {
 func (h *Handler) handleAbortChat() error {
 	h.log.Infof("client abort chat")
 	atomic.StoreInt32(&h.interrupt, 1)
+	if h.agentProvider != nil {
+		_ = h.agentProvider.Reset()
+	}
+	if h.ttsProvider != nil {
+		_ = h.ttsProvider.Reset()
+	}
 	return nil
 
 }
